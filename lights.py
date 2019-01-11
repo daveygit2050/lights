@@ -9,19 +9,20 @@ from urllib3.exceptions import InsecureRequestWarning
 
 
 def change_light_hue(api_url, light_number, new_hue):
-    body = {"hue": new_hue}
+    body = {"hue": new_hue}  # TODO: "on" should only be sent once
     requests.put('{}/lights/{}/state'.format(api_url, light_number), data=json.dumps(body), verify=False)
 
 
-def get_lights_by_name(name):
-    response = requests.put('{}/lights'.format(api_url), verify=False)
-    return [light for light in response.json().values() if name.lower() in light['name'].lower()]
+def get_light_numbers_by_name(api_url, name):
+    print("Getting lights")
+    light_json = requests.get('{}/lights'.format(api_url), verify=False).json()
+    return [key for key in light_json.keys() if name.lower() in light_json[key]['name'].lower()]
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Play around with hue lights")
     parser.add_argument("action", help="Perform this action", choices=["colour-cycle"])
-    parser.add_argument("--name", help="Filter by lights matching this name")
+    parser.add_argument("--name", help="Filter by lights matching this name", dest='name')
     return parser.parse_args()
 
 
@@ -30,11 +31,13 @@ if __name__ == "__main__":
     # TODO: Handle config.json being missing
     with open("config.json", "r") as config_file:
         config = json.load(config_file)
+    print(config)
     # TODO: Create new username if required and store in config
     # TODO: If IP is missing or wrong, discover and save to config
     api_url = 'https://{}/api/{}'.format(config['hue_ip'], config['hue_username'])
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
-    lights = get_lights_by_name("kitchen")
+    lights = get_light_numbers_by_name(api_url=api_url, name=args.name)
+    print("Lights: {}".format(lights))
     if args.action == "colour-cycle":
         while True:
             for hue in range(0, 65280, 1000):
