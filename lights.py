@@ -8,8 +8,10 @@ import time
 from urllib3.exceptions import InsecureRequestWarning
 
 
+# TODO: Make class for all api calls
+
 def change_light_hue(api_url, light_number, new_hue):
-    body = {"hue": new_hue}  # TODO: "on" should only be sent once
+    body = {"hue": new_hue}
     requests.put('{}/lights/{}/state'.format(api_url, light_number), data=json.dumps(body), verify=False)
 
 
@@ -26,6 +28,12 @@ def parse_arguments():
     return parser.parse_args()
 
 
+def turn_lights_on(api_url, light_numbers):
+    for light_number in light_numbers:
+        body = {"on": True}
+        requests.put('{}/lights/{}/state'.format(api_url, light_number), data=json.dumps(body), verify=False)
+
+
 if __name__ == "__main__":
     args = parse_arguments()
     # TODO: Handle config.json being missing
@@ -38,6 +46,7 @@ if __name__ == "__main__":
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
     lights = get_light_numbers_by_name(api_url=api_url, name=args.name)
     print("Lights: {}".format(lights))
+    turn_lights_on(api_url=api_url, light_numbers=lights)
     if args.action == "colour-cycle":
         while True:
             for hue in range(0, 65280, 1000):
