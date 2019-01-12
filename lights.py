@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import random
 import requests
 import time
 
@@ -24,7 +25,7 @@ def get_light_numbers_by_name(api_url, name):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Play around with hue lights")
-    parser.add_argument("action", help="Perform this action", choices=["colour-cycle"])
+    parser.add_argument("action", help="Perform this action", choices=["colour-cycle", "jumper", "random"])
     parser.add_argument("--name", help="Filter by lights matching this name", dest='name')
     return parser.parse_args()
 
@@ -51,6 +52,18 @@ if __name__ == "__main__":
     if args.action == "colour-cycle":
         while True:
             for hue in range(0, 65280, 1000):
-                for light in lights:
-                    change_light_hue(api_url=api_url, light_number=light, new_hue=hue)
+                change_lights_hue(api_url=api_url, light_numbers=lights, new_hue=hue)
                 time.sleep(1)
+    elif args.action == "jumper":
+        while True:
+            hot_light = random.choice(lights)
+            change_lights_hue(api_url=api_url, light_numbers=[hot_light], new_hue=0)
+            change_lights_hue(api_url=api_url, light_numbers=[light for light in lights if light != hot_light], new_hue=39000)
+            time.sleep(1)
+    elif args.action == "random":
+        while True:
+            for light in lights:
+                change_lights_hue(api_url=api_url, light_numbers=[light], new_hue=random.choice(range(0, 65280)))
+            time.sleep(1)
+
+
