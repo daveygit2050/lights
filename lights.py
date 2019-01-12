@@ -10,9 +10,10 @@ from urllib3.exceptions import InsecureRequestWarning
 
 # TODO: Make class for all api calls
 
-def change_light_hue(api_url, light_number, new_hue):
+def change_lights_hue(api_url, light_numbers, new_hue):
     body = {"hue": new_hue}
-    requests.put('{}/lights/{}/state'.format(api_url, light_number), data=json.dumps(body), verify=False)
+    for light_number in light_numbers:
+        requests.put('{}/lights/{}/state'.format(api_url, light_number), data=json.dumps(body), verify=False)
 
 
 def get_light_numbers_by_name(api_url, name):
